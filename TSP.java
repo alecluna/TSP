@@ -54,7 +54,6 @@ public class TSP {
         // }
         System.out.println("vertexCount: " + vertexCount);
         System.out.println("length: " + length);
-
     }
 
     public static ArrayList<int[]> sortWeights(ArrayList<int[]> numList) {
@@ -62,7 +61,7 @@ public class TSP {
         Collections.sort(numList, (int[] arr1, int[] arr2) -> {
             int weight1 = arr1[0];
             int weight2 = arr2[0];
-            
+
             if (weight1 == weight2) {
                 return 0;
             } else if (weight1 < weight2) {
