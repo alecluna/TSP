@@ -7,11 +7,13 @@ public class TSP {
     int size;
     double p;
     int counter;
+    int vertices;
 
-    public TSP(int size) {
+    public TSP(int size, int vertices) {
         rank = new int[size];
-        vertex = new int[size];
+        vertex = new int[size + 1];
         this.size = size;
+        this.vertices = vertices;
     }
 
     int find(int x) {
@@ -47,19 +49,32 @@ public class TSP {
         }
     }
 
-    // attack 2d array generated from input to list of vertices for union find
-    public static void BuildGraph(ArrayList<int[]> numList, int vertexCount, int length) {
+    boolean isSameComponent(int vertex1, int vertex2) {
+        return find(vertex1) == find(vertex2);
+    }
 
-        for (int i = 0; i <= numList.size() - 1; i++) {
+    // attack 2d array generated from input to list of vertices for union find
+    void BuildGraph(ArrayList<int[]> numList) {
+
+        System.out.println("\nSIZE: " + this.size);
+        // generate vertices in terms of src => dest
+        for (int i = 0; i <= this.size - 1; i++) {
+
+            vertex[i] = numList.get(i)[1];
+
+        }
+        // for (int i = 0; i <= this.size; i += 2) {
+        // System.out.println(" vertex[" + vertex[i] + "]");
+        // }
+
+        for (int i = 0; i <= this.vertices; i++) {
 
             System.out.println(
                     "Num List: " + numList.get(i)[0] + " Src: " + numList.get(i)[1] + " => " + numList.get(i)[2]);
+            System.out.println("Union " + numList.get(i)[1] + " => " + numList.get(i)[2]);
+            // union(numList.get(i)[1], numList.get(i)[2]);
+
         }
-
-        // for (int i = 0; i <= numList.size() - 1; i++) {
-
-        // }
-
     }
 
     public static ArrayList<int[]> sortWeights(ArrayList<int[]> numList) {
@@ -88,7 +103,7 @@ public class TSP {
 
             // number of vertices
             int vertices = Integer.parseInt(reader.next());
-            System.out.println(vertices);
+            System.out.println("Vertices: " + vertices);
             while (reader.hasNext()) {
 
                 int[] endpoint = new int[3];
@@ -99,9 +114,9 @@ public class TSP {
                 numList.add(endpoint);
             }
 
-            TSP tsp = new TSP(numList.size());
+            TSP tsp = new TSP((numList.size() * 2), vertices);
             sortWeights(numList);
-            BuildGraph(numList, vertices, numList.size());
+            tsp.BuildGraph(numList);
 
         } catch (IOException e) {
 
