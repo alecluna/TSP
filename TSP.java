@@ -3,57 +3,63 @@ import java.io.*;
 
 public class TSP {
 
-    // int find(int x) {
+    int[] rank, vertex;
+    int size;
+    double p;
+    int counter;
 
-    // while (x != vertex[x]) {
-    // vertex[x] = vertex[vertex[x]];
-    // x = vertex[x];
-    // }
-    // return vertex[x];
+    public TSP(int size) {
+        rank = new int[size];
+        vertex = new int[size];
+        this.size = size;
+    }
 
-    // }
+    int find(int x) {
 
-    // void union(int i, int j) {
-    // // Find vertexs of two sets
-    // int xRoot = find(i), yRoot = find(j);
+        while (x != vertex[x]) {
+            vertex[x] = vertex[vertex[x]];
+            x = vertex[x];
+        }
+        return vertex[x];
 
-    // // if elements are in the same set, exit
-    // if (xRoot == yRoot)
-    // return;
+    }
 
-    // if (rank[xRoot] < rank[yRoot])
-    // vertex[xRoot] = yRoot;
+    void union(int i, int j) {
+        // Find vertexs of two sets
+        int xRoot = find(i), yRoot = find(j);
 
-    // else if (rank[yRoot] < rank[xRoot])
-    // vertex[yRoot] = xRoot;
+        // if elements are in the same set, exit
+        if (xRoot == yRoot)
+            return;
 
-    // else // if ranks are the same
-    // {
-    // // place y into x
-    // vertex[yRoot] = xRoot;
-    // // increment x rank
-    // rank[xRoot] = rank[xRoot] + 1;
-    // }
-    // }
+        if (rank[xRoot] < rank[yRoot])
+            vertex[xRoot] = yRoot;
 
-    public static void BuildGraph(ArrayList<Integer> numList, int vertexCount, int length) {
+        else if (rank[yRoot] < rank[xRoot])
+            vertex[yRoot] = xRoot;
 
-        for (int i = 0; i <= numList.size(); i++) {
+        else // if ranks are the same
+        {
+            // place y into x
+            vertex[yRoot] = xRoot;
+            // increment x rank
+            rank[xRoot] = rank[xRoot] + 1;
+        }
+    }
 
-            System.out.println("Num List: " + numList.get(i));
+    // attack 2d array generated from input to list of vertices for union find
+    public static void BuildGraph(ArrayList<int[]> numList, int vertexCount, int length) {
+
+        for (int i = 0; i <= numList.size() - 1; i++) {
+
+            System.out.println(
+                    "Num List: " + numList.get(i)[0] + " Src: " + numList.get(i)[1] + " => " + numList.get(i)[2]);
         }
 
-        // for (int i = 0; i <= length - 1; i++) {
-        // for (int j = 0; j <= length - 1; j++) {
+        // for (int i = 0; i <= numList.size() - 1; i++) {
 
-        // if (i % 3 == 0 && j % 3 == 1) {
-        // // arr[i][j] = ;
-        // System.out.println(arr[i][j]);
         // }
-        // }
-        // }
-        System.out.println("vertexCount: " + vertexCount);
-        System.out.println("length: " + length);
+
     }
 
     public static ArrayList<int[]> sortWeights(ArrayList<int[]> numList) {
@@ -81,8 +87,8 @@ public class TSP {
             reader = new Scanner(new File("input.txt"));
 
             // number of vertices
-            int numVertices = Integer.parseInt(reader.next());
-            System.out.println(numVertices);
+            int vertices = Integer.parseInt(reader.next());
+            System.out.println(vertices);
             while (reader.hasNext()) {
 
                 int[] endpoint = new int[3];
@@ -93,10 +99,9 @@ public class TSP {
                 numList.add(endpoint);
             }
 
-            List list = sortWeights(numList);
-            // Object[] numListToArr = numList.toArray();
-
-            // BuildGraph(numList, vertices, numList.size());
+            TSP tsp = new TSP(numList.size());
+            sortWeights(numList);
+            BuildGraph(numList, vertices, numList.size());
 
         } catch (IOException e) {
 
