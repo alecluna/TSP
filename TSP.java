@@ -1,127 +1,158 @@
 import java.util.*;
 import java.io.*;
+import java.lang.*;
 
-public class TSP {
+class TSP {
+    class Edge implements Comparable<Edge> {
+        int source, destination, weight;
 
-    int[] rank, vertex;
-    int size;
-    double p;
-    int counter;
-    int vertices;
-
-    public TSP(int size, int vertices) {
-        rank = new int[size];
-        vertex = new int[size + 1];
-        this.size = size;
-        this.vertices = vertices;
-    }
-
-    int find(int x) {
-
-        while (x != vertex[x]) {
-            vertex[x] = vertex[vertex[x]];
-            x = vertex[x];
+        // compartor function to sort weights, TODO refactor
+        public int compareTo(Edge nextWeight) {
+            if (this.weight == nextWeight.weight)
+                return 0;
+            else if (this.weight < nextWeight.weight)
+                return -1;
+            else
+                return 1;
         }
-        return vertex[x];
+    };
 
+    // A class to represent a subset for union-find
+    class verticesGroups {
+        int parent, rank;
+    };
+
+    int V, E; // V-> no. of vertices & E->no.of edges
+    Edge edge[]; // collection of all edges
+
+    // Creates a TSP with V vertices and E edges
+    TSP(int v, int e) {
+        V = v;
+        E = e;
+        edge = new Edge[E];
+        for (int i = 0; i < e; ++i)
+            edge[i] = new Edge();
     }
 
-    void union(int i, int j) {
-        // Find vertexs of two sets
-        int xRoot = find(i), yRoot = find(j);
+    // A utility function to find set of an element i
+    // (uses path compression technique)
+    int find(verticesGroups subsets[], int i) {
+        // find root and make root as parent of i (path compression)
+        if (subsets[i].parent != i)
+            subsets[i].parent = find(subsets, subsets[i].parent);
 
-        // if elements are in the same set, exit
-        if (xRoot == yRoot)
-            return;
-
-        if (rank[xRoot] < rank[yRoot])
-            vertex[xRoot] = yRoot;
-
-        else if (rank[yRoot] < rank[xRoot])
-            vertex[yRoot] = xRoot;
-
-        else // if ranks are the same
-        {
-            // place y into x
-            vertex[yRoot] = xRoot;
-            // increment x rank
-            rank[xRoot] = rank[xRoot] + 1;
-        }
-
+        return subsets[i].parent;
     }
 
-    boolean isSameComponent(int vertex1, int vertex2) {
-        return find(vertex1) == find(vertex2);
-    }
+    // A function that does union of two sets of x and y
+    // (uses union by rank)
+    void Union(verticesGroups subsets[], int x, int y) {
+        int xroot = find(subsets, x);
+        int yroot = find(subsets, y);
 
-    // attack 2d array generated from input to list of vertices for union find
-    void buildGraph(ArrayList<int[]> numList) {
+        // Attach smaller rank tree under root of high rank tree
+        // (Union by Rank)
+        if (subsets[xroot].rank < subsets[yroot].rank)
+            subsets[xroot].parent = yroot;
+        else if (subsets[xroot].rank > subsets[yroot].rank)
+            subsets[yroot].parent = xroot;
 
-        System.out.println("\nSIZE: " + this.size);
-
-        List<Integer> newVertex = new ArrayList<Integer>();
-        for (int i = 0; i < numList.size(); i++) {
-            newVertex.add(numList.get(i)[1]);
-            newVertex.add(numList.get(i)[2]);
-        }
-        // i != j
-        // for (int i = 0; i <= length - 2; i++) {
-        // for (int j = i + 1; j <= length - 1; j++) {
-
-        // // if i,j are in same component, add to counter
-        // if (!isSameComponent(i, j)) {
-        // union(i, j);
-        // }
-        // }
-
-        // }
-
-        for (int i = 0; i < newVertex.size(); i++) {
-
-            System.out.println("Num List: " + newVertex.get(i));
-            // System.out.println("Union " + numList.get(i)[1] + " => " +
-            // numList.get(i)[2]);
-            // union(numList.get(i)[1], numList.get(i)[2]);
-
+        // If ranks are same, then make one as root and increment
+        // its rank by one
+        else {
+            subsets[yroot].parent = xroot;
+            subsets[xroot].rank++;
         }
     }
 
-    public static ArrayList<int[]> sortWeights(ArrayList<int[]> numList) {
+    public void KruskalMST() {
+        Edge result[] = new Edge[V]; // expected output
+        int e = 0; // An index variable, used for result[]
+        int i = 0; // An index variable, used for sorted edges
+        for (i = 0; i < V; ++i)
+            result[i] = new Edge();
 
-        Collections.sort(numList, (int[] arr1, int[] arr2) -> {
-            int weight1 = arr1[0];
-            int weight2 = arr2[0];
+        // Step 1: Sort all the edges in non-decreasing order of their
+        // weight. If we are not allowed to change the given TSP, we
+        // can create a copy of array of edges
+        Arrays.sort(edge);
 
-            return weight1 - weight2;
-        });
-        return numList;
+        // Allocate memory for creating V subsets
+        verticesGroups subsets[] = new verticesGroups[V];
+        for (i = 0; i < V; ++i)
+            subsets[i] = new verticesGroups();
+
+        // Create V subsets with single elements
+        for (int v = 0; v < V; ++v) {
+            subsets[v].parent = v;
+            subsets[v].rank = 0;
+        }
+
+        i = 0; // Index used to pick next edge
+
+        // Number of edges to be taken is equal to V-1
+        while (e < V - 1) {
+            // Step 2: Pick the smallest edge. And increment
+            // the index for next iteration
+            Edge next_edge = new Edge();
+            next_edge = edge[i++];
+
+            int x = find(subsets, next_edge.source);
+            int y = find(subsets, next_edge.destination);
+
+            // If including this edge does't cause cycle,
+            // include it in result and increment the index
+            // of result for next edge
+            if (x != y) {
+                result[e++] = next_edge;
+                Union(subsets, x, y);
+            }
+            // Else discard the next_edge
+        }
+
+        System.out.println("MST using Kruskals");
+        HashSet<Integer> finalOutput = new HashSet<Integer>();
+
+        for (i = 0; i < e; ++i) {
+            System.out.println(result[i].source + " -- " + result[i].destination);
+            finalOutput.add(result[i].source);
+            finalOutput.add(result[i].destination);
+        }
+
+        for (int k : finalOutput) {
+            System.out.println(k);
+        }
     }
 
-    public static void main(String[] args) throws IOException {
-
-        ArrayList<int[]> numList = new ArrayList<int[]>();
+    public static void main(String[] args) {
 
         try (Scanner reader = new Scanner(new File("input.txt"))) {
 
-            // number of vertices
-            int vertices = Integer.parseInt(reader.next());
-            System.out.println("Vertices: " + vertices);
-            while (reader.hasNext()) {
+            int V = Integer.parseInt(reader.next());
 
-                int[] endpoint = new int[3];
-                endpoint[1] = Integer.parseInt(reader.next());
-                endpoint[2] = Integer.parseInt(reader.next());
-                endpoint[0] = Integer.parseInt(reader.next());
-
-                numList.add(endpoint);
+            if (V == 0) {
+                System.out.println("0 Vertices given...exiting program");
             }
 
-            TSP tsp = new TSP((numList.size() * 2), vertices);
-            sortWeights(numList);
-            tsp.buildGraph(numList);
+            int E = V + 1;
+            System.out.println("Vertices V = " + V);
+            System.out.println("Edges E = " + E);
 
+            TSP TSP = new TSP(V, E);
+            int counter = 0;
+            while (reader.hasNext()) {
+
+                TSP.edge[counter].source = Integer.parseInt(reader.next());
+                TSP.edge[counter].destination = Integer.parseInt(reader.next());
+                TSP.edge[counter].weight = Integer.parseInt(reader.next());
+                counter++;
+            }
+
+            TSP.KruskalMST();
+            System.out.println("done ✅");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }

@@ -1,3 +1,4 @@
-TSP$1.class
+*.class
 output.txt
-.vscode
+*.vscode
+TSP2.java
