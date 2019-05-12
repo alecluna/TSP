@@ -47,6 +47,7 @@ public class TSP {
             // increment x rank
             rank[xRoot] = rank[xRoot] + 1;
         }
+
     }
 
     boolean isSameComponent(int vertex1, int vertex2) {
@@ -54,21 +55,32 @@ public class TSP {
     }
 
     // attack 2d array generated from input to list of vertices for union find
-    void BuildGraph(ArrayList<int[]> numList) {
+    void buildGraph(ArrayList<int[]> numList) {
 
         System.out.println("\nSIZE: " + this.size);
 
-        // generate vertices in terms of src => dest
-        for (int i = 0; i <= this.size; i += 2) {
-            vertex[i] = numList.get(i)[1];
-            vertex[i + 1] = numList.get(i)[2];
+        List<Integer> newVertex = new ArrayList<Integer>();
+        for (int i = 0; i < numList.size(); i++) {
+            newVertex.add(numList.get(i)[1]);
+            newVertex.add(numList.get(i)[2]);
         }
+        // i != j
+        // for (int i = 0; i <= length - 2; i++) {
+        // for (int j = i + 1; j <= length - 1; j++) {
 
-        for (int i = 0; i <= this.vertices; i++) {
+        // // if i,j are in same component, add to counter
+        // if (!isSameComponent(i, j)) {
+        // union(i, j);
+        // }
+        // }
 
-            System.out.println(
-                    "Num List: " + numList.get(i)[0] + " Src: " + numList.get(i)[1] + " => " + numList.get(i)[2]);
-            System.out.println("Union " + numList.get(i)[1] + " => " + numList.get(i)[2]);
+        // }
+
+        for (int i = 0; i < newVertex.size(); i++) {
+
+            System.out.println("Num List: " + newVertex.get(i));
+            // System.out.println("Union " + numList.get(i)[1] + " => " +
+            // numList.get(i)[2]);
             // union(numList.get(i)[1], numList.get(i)[2]);
 
         }
@@ -80,23 +92,16 @@ public class TSP {
             int weight1 = arr1[0];
             int weight2 = arr2[0];
 
-            if (weight1 == weight2) {
-                return 0;
-            } else if (weight1 < weight2) {
-                return -1;
-            } else
-                return 1;
+            return weight1 - weight2;
         });
         return numList;
     }
 
     public static void main(String[] args) throws IOException {
-        Scanner reader = null;
 
         ArrayList<int[]> numList = new ArrayList<int[]>();
 
-        try {
-            reader = new Scanner(new File("input.txt"));
+        try (Scanner reader = new Scanner(new File("input.txt"))) {
 
             // number of vertices
             int vertices = Integer.parseInt(reader.next());
@@ -113,17 +118,10 @@ public class TSP {
 
             TSP tsp = new TSP((numList.size() * 2), vertices);
             sortWeights(numList);
-            tsp.BuildGraph(numList);
+            tsp.buildGraph(numList);
 
         } catch (IOException e) {
-
             e.printStackTrace();
-
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-
         }
     }
 }
