@@ -57,15 +57,12 @@ public class TSP {
     void BuildGraph(ArrayList<int[]> numList) {
 
         System.out.println("\nSIZE: " + this.size);
+
         // generate vertices in terms of src => dest
-        for (int i = 0; i <= this.size - 1; i++) {
-
+        for (int i = 0; i <= this.size; i += 2) {
             vertex[i] = numList.get(i)[1];
-
+            vertex[i + 1] = numList.get(i)[2];
         }
-        // for (int i = 0; i <= this.size; i += 2) {
-        // System.out.println(" vertex[" + vertex[i] + "]");
-        // }
 
         for (int i = 0; i <= this.vertices; i++) {
 
