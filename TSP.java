@@ -10,10 +10,12 @@ class TSP {
         totalVertices = vertices;
         E = edges;
         edge = new Edge[E];
+        // instantiate edges
         for (int i = 0; i < edges; ++i)
             edge[i] = new Edge();
     }
 
+    // Kruskals will contain groups of vertices aka forests
     class VerticeGroups {
         int rank, parent;
     };
@@ -21,106 +23,110 @@ class TSP {
     class Edge implements Comparable<Edge> {
         int source, destination, weight;
 
-        // comparater function to sort weights, TODO refactor
+        // comparator function to sort weights
         public int compareTo(Edge nextWeight) {
-            if (this.weight == nextWeight.weight)
-                return 0;
-            else if (this.weight < nextWeight.weight)
-                return -1;
-            else
-                return 1;
-        }
-    };
+            return this.weight - nextWeight.weight;
+        };
+    }
 
     // path compression
-    int find(VerticeGroups subsets[], int i) {
-        // find root and make root as parent of i (path compression)
-        if (subsets[i].parent != i)
-            subsets[i].parent = find(subsets, subsets[i].parent);
-
-        return subsets[i].parent;
+    int find(VerticeGroups forests[], int x) {
+        while (x != forests[x].parent) {
+            forests[x].parent = find(forests, forests[x].parent);
+            x = forests[x].parent;
+        }
+        return forests[x].parent;
     }
 
-    // A function that does union of two sets of x and y
-    // (uses union by rank)
-    void Union(VerticeGroups subsets[], int x, int y) {
-        int xroot = find(subsets, x);
-        int yroot = find(subsets, y);
+    // union by rank
+    void Union(VerticeGroups forests[], int x, int y) {
+        int xRoot = find(forests, x);
+        int yRoot = find(forests, y);
 
-        // Attach smaller rank tree under root of high rank tree
-        // (Union by Rank)
-        if (subsets[xroot].rank < subsets[yroot].rank)
-            subsets[xroot].parent = yroot;
-        else if (subsets[xroot].rank > subsets[yroot].rank)
-            subsets[yroot].parent = xroot;
+        if (forests[xRoot].rank < forests[yRoot].rank)
+            forests[xRoot].parent = yRoot;
+        else if (forests[xRoot].rank > forests[yRoot].rank)
+            forests[yRoot].parent = xRoot;
 
-        // If ranks are same, then make one as root and increment
-        // its rank by one
         else {
-            subsets[yroot].parent = xroot;
-            subsets[xroot].rank++;
+            forests[yRoot].parent = xRoot;
+            forests[xRoot].rank++;
         }
     }
 
+    // start by sorting weights, then using union find to link
+    // vertices/edges together into "forests". Repeat
+    // until an MST with V - 1 vertices is found
     public void KruskalMST() {
         // instantiate an array of results
-        Edge result[] = new Edge[totalVertices]; // expected output
-        int e = 0; // An index variable, used for result[]
-        int i = 0; // An index variable, used for sorted edges
-        for (i = 0; i < totalVertices; ++i)
-            result[i] = new Edge();
+        Edge result[] = new Edge[totalVertices];
+        VerticeGroups forests[] = new VerticeGroups[totalVertices];
 
+        for (int i = 0; i < totalVertices; ++i) {
+            result[i] = new Edge();
+            // Edge.compareTo(edge);
+        }
+
+        // sort weights
         Arrays.sort(edge);
 
-        // Allocate memory for creating V subsets
-        VerticeGroups subsets[] = new VerticeGroups[totalVertices];
-        for (i = 0; i < totalVertices; ++i)
-            subsets[i] = new VerticeGroups();
-
-        // Create V subsets with single elements
-        for (int v = 0; v < totalVertices; ++v) {
-            subsets[v].parent = v;
-            subsets[v].rank = 0;
+        // Allocate memory for creating V forests
+        for (int i = 0; i < totalVertices; ++i) {
+            forests[i] = new VerticeGroups();
         }
 
-        i = 0; // Index used to pick next edge
+        // store vertices, there will be v number of possible forests
+        for (int v = 0; v < totalVertices; v++) {
+            forests[v].parent = v;
+            forests[v].rank = 0;
+        }
 
-        // Number of edges to be taken is equal to V-1
-        while (e < totalVertices - 1) {
+        // V - 1 to satisfty MST
+        int cur = 0;
+        int i = 0;
+        while (i < totalVertices - 1) {
             // Step 2: Pick the smallest edge. And increment
             // the index for next iteration
-            Edge next_edge = new Edge();
-            next_edge = edge[i++];
+            Edge nextEdge = new Edge();
+            nextEdge = edge[cur++];
 
-            int x = find(subsets, next_edge.source);
-            int y = find(subsets, next_edge.destination);
-
-            // If including this edge does't cause cycle,
-            // include it in result and increment the index
-            // of result for next edge
-            if (x != y) {
-                result[e++] = next_edge;
-                Union(subsets, x, y);
+            if (find(forests, nextEdge.source) != find(forests, nextEdge.destination)) {
+                // tallies number of edges are connected in forest
+                result[i++] = nextEdge;
+                Union(forests, find(forests, nextEdge.source), find(forests, nextEdge.destination));
             }
-            // Else discard the next_edge
         }
 
-        System.out.println("MST using Kruskals");
+        // no repeats
         HashSet<Integer> finalOutput = new HashSet<Integer>();
 
-        for (i = 0; i < e; ++i) {
-            System.out.println(result[i].source + " -- " + result[i].destination);
-            finalOutput.add(result[i].source);
-            finalOutput.add(result[i].destination);
+        for (int x = 0; x < i; x++) {
+            finalOutput.add(result[x].source);
+            finalOutput.add(result[x].destination);
         }
 
         for (int k : finalOutput) {
-            System.out.println(k);
+            System.out.print(k + " ");
         }
     }
 
-    public static void main(String[] args) {
+    /*
+     *
+     * APPROX-TSP-TOUR.G
+     * 
+     * 1 select a vertex r 2 G:V to be a “root” vertex
+     * 
+     * 2 compute a minimum spanning tree T for G from root r using MST-PRIM.G; c;
+     * 
+     * 3 let H be a list of vertices, ordered according to when they are first
+     * visited in a preorder tree walk of T
+     * 
+     * 4 return the hamiltonian cycle H
+     *
+     */
+    public static void main(String[] args) throws IOException {
 
+        // read file
         try (Scanner reader = new Scanner(new File("input.txt"))) {
 
             int vertices = Integer.parseInt(reader.next());
@@ -131,11 +137,9 @@ class TSP {
             }
 
             int edges = vertices + 1;
-            System.out.println("Vertices V = " + vertices);
-            System.out.println("Edges = " + edges);
-
             TSP TSP = new TSP(vertices, edges);
             int counter = 0;
+
             while (reader.hasNext()) {
 
                 TSP.edge[counter].source = Integer.parseInt(reader.next());
@@ -143,12 +147,10 @@ class TSP {
                 TSP.edge[counter].weight = Integer.parseInt(reader.next());
                 counter++;
             }
-
+            // begin Kruskal MST
             TSP.KruskalMST();
-            System.out.println("done ✅");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
