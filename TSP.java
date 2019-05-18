@@ -11,11 +11,11 @@ class TSP {
         E = edges;
         edge = new Edge[E];
         // instantiate edges
-        for (int i = 0; i < edges; ++i)
+        for (int i = 0; i < edges; i++)
             edge[i] = new Edge();
     }
 
-    // Kruskals will contain groups of vertices aka forests
+    // Kruskals will contain groups of vertices
     class VerticeGroups {
         int rank, parent;
     };
@@ -45,6 +45,7 @@ class TSP {
 
         if (forests[xRoot].rank < forests[yRoot].rank)
             forests[xRoot].parent = yRoot;
+
         else if (forests[xRoot].rank > forests[yRoot].rank)
             forests[yRoot].parent = xRoot;
 
@@ -58,11 +59,13 @@ class TSP {
     // vertices/edges together into "forests". Repeat
     // until an MST with V - 1 vertices is found
     public void KruskalMST() {
+
         // instantiate an array of results
         Edge result[] = new Edge[totalVertices];
+        // instantiate a group of vertices(forests)
         VerticeGroups forests[] = new VerticeGroups[totalVertices];
 
-        for (int i = 0; i < totalVertices; ++i) {
+        for (int i = 0; i < totalVertices; i++) {
             result[i] = new Edge();
             // Edge.compareTo(edge);
         }
@@ -71,7 +74,7 @@ class TSP {
         Arrays.sort(edge);
 
         // Allocate memory for creating V forests
-        for (int i = 0; i < totalVertices; ++i) {
+        for (int i = 0; i < totalVertices; i++) {
             forests[i] = new VerticeGroups();
         }
 
@@ -81,9 +84,9 @@ class TSP {
             forests[v].rank = 0;
         }
 
-        // V - 1 to satisfty MST
         int cur = 0;
         int i = 0;
+        // vertices - 1 to satisfty MST
         while (i < totalVertices - 1) {
             // Step 2: Pick the smallest edge. And increment
             // the index for next iteration
@@ -110,20 +113,6 @@ class TSP {
         }
     }
 
-    /*
-     *
-     * APPROX-TSP-TOUR.G
-     * 
-     * 1 select a vertex r 2 G:V to be a “root” vertex
-     * 
-     * 2 compute a minimum spanning tree T for G from root r using MST-PRIM.G; c;
-     * 
-     * 3 let H be a list of vertices, ordered according to when they are first
-     * visited in a preorder tree walk of T
-     * 
-     * 4 return the hamiltonian cycle H
-     *
-     */
     public static void main(String[] args) throws IOException {
 
         // read file
